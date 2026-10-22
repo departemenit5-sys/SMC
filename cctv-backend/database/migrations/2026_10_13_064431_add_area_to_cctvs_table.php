@@ -1,0 +1,25 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('cctvs', function (Blueprint $table) {
+            $table->string('area')->after('code')->default('Main Building'); // Contoh: Main Building, HOH, Villa Area
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('cctvs', function (Blueprint $table) {
+            $table->dropColumn('area');
+        });
+    }
+};
