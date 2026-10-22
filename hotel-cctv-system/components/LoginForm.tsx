@@ -1,4 +1,3 @@
-// components/LoginForm.tsx
 'use client';
 
 import { useState } from 'react';
@@ -39,11 +38,11 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
       const user = response.user;
       const userRole: Role = user.role || 'staff';
 
-      // Simpan data autentikasi ke localStorage
-      localStorage.setItem('user_role', userRole);
-      localStorage.setItem('user_name', user.name);
-      localStorage.setItem('username', user.username);
-      localStorage.setItem('user_department', user.department || '');
+      // Simpan data autentikasi ke sessionStorage agar hilang saat tab/browser ditutup
+      sessionStorage.setItem('user_role', userRole);
+      sessionStorage.setItem('user_name', user.name);
+      sessionStorage.setItem('username', user.username);
+      sessionStorage.setItem('user_department', user.department || '');
 
       if (onLogin) {
         onLogin(userRole, user.username);
