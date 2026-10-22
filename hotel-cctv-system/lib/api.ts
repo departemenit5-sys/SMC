@@ -1,7 +1,29 @@
 // lib/api.ts
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://192.168.110.67/api';
-const STORAGE_URL = process.env.NEXT_PUBLIC_STORAGE_URL || 'http://192.168.110.67/storage';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.cctv-homm.my.id/api';
+const STORAGE_URL = process.env.NEXT_PUBLIC_STORAGE_URL || 'https://api.cctv-homm.my.id/storage';
+
+/**
+ * Helper untuk mendapatkan token dari sessionStorage (Client-side)
+ */
+const getAuthHeaders = (isFormData = false) => {
+  const headers: Record<string, string> = {
+    'Accept': 'application/json',
+  };
+
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  if (typeof window !== 'undefined') {
+    const token = sessionStorage.getItem('token');
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
+
+  return headers;
+};
 
 /**
  * Helper untuk mendapatkan URL lengkap foto bukti kerusakan
@@ -9,7 +31,7 @@ const STORAGE_URL = process.env.NEXT_PUBLIC_STORAGE_URL || 'http://192.168.110.6
 export const getPhotoUrl = (path: string | null) => {
   if (!path) return null;
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
-  return `${STORAGE_URL}/${path}`;
+  return `${STORAGE_URL}/${path.replace(/^\//, '')}`;
 };
 
 // ==========================================
@@ -20,7 +42,7 @@ export async function getCCTVs() {
   try {
     const res = await fetch(`${API_BASE_URL}/cctvs`, {
       cache: 'no-store',
-      headers: { 'Accept': 'application/json' },
+      headers: getAuthHeaders(),
     });
     if (!res.ok) {
       const errorData = await res.json().catch(() => null);
@@ -37,10 +59,7 @@ export async function createCCTV(data: any) {
   try {
     const res = await fetch(`${API_BASE_URL}/cctvs`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
     if (!res.ok) {
@@ -58,10 +77,7 @@ export async function updateCCTV(id: number | string, data: any) {
   try {
     const res = await fetch(`${API_BASE_URL}/cctvs/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
     if (!res.ok) {
@@ -79,7 +95,7 @@ export async function deleteCCTV(id: number | string) {
   try {
     const res = await fetch(`${API_BASE_URL}/cctvs/${id}`, {
       method: 'DELETE',
-      headers: { 'Accept': 'application/json' },
+      headers: getAuthHeaders(),
     });
     if (!res.ok) {
       const errorData = await res.json().catch(() => null);
@@ -100,7 +116,7 @@ export async function getTickets() {
   try {
     const res = await fetch(`${API_BASE_URL}/tickets`, {
       cache: 'no-store',
-      headers: { 'Accept': 'application/json' },
+      headers: getAuthHeaders(),
     });
     if (!res.ok) {
       const errorData = await res.json().catch(() => null);
@@ -117,7 +133,7 @@ export async function createTicket(formData: FormData) {
   try {
     const res = await fetch(`${API_BASE_URL}/tickets`, {
       method: 'POST',
-      headers: { 'Accept': 'application/json' }, // FormData otomatis set Content-Type multipart
+      headers: getAuthHeaders(true), // FormData otomatis menetapkan boundary multipart
       body: formData,
     });
     if (!res.ok) {
@@ -138,10 +154,7 @@ export async function updateTicket(
   try {
     const res = await fetch(`${API_BASE_URL}/tickets/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
     if (!res.ok) {
@@ -162,7 +175,7 @@ export async function updateTicket(
 export async function getUsers() {
   const res = await fetch(`${API_BASE_URL}/users`, {
     cache: 'no-store',
-    headers: { 'Accept': 'application/json' },
+    headers: getAuthHeaders(),
   });
   if (!res.ok) throw new Error('Gagal mengambil data user');
   return res.json();
@@ -172,10 +185,7 @@ export async function createUser(data: any) {
   try {
     const res = await fetch(`${API_BASE_URL}/users`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
     const result = await res.json().catch(() => null);
@@ -194,10 +204,7 @@ export async function updateUser(id: number | string, data: any) {
   try {
     const res = await fetch(`${API_BASE_URL}/users/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
     const result = await res.json().catch(() => null);
@@ -215,7 +222,7 @@ export async function updateUser(id: number | string, data: any) {
 export async function deleteUser(id: number | string) {
   const res = await fetch(`${API_BASE_URL}/users/${id}`, {
     method: 'DELETE',
-    headers: { 'Accept': 'application/json' },
+    headers: getAuthHeaders(),
   });
   if (!res.ok) throw new Error('Gagal menghapus user');
   return res.json();
