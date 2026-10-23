@@ -410,9 +410,9 @@ export default function MasterCCTVPage() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 print:space-y-3 relative w-full max-w-full min-w-0 p-4 sm:p-6 print:p-0">
-      {/* Pengaturan kertas saat print: A4 landscape */}
-      <style>{`@media print { @page { size: A4 landscape; margin: 10mm; } }`}</style>
+    <div className="space-y-4 sm:space-y-6 print:space-y-3 relative w-full max-w-full min-w-0 p-4 sm:p-6 print:p-0 print:px-[10mm] print:pt-[10mm] print:pb-[10mm]">
+      {/* Pengaturan kertas saat print: A4 landscape, margin 0 agar header/footer browser (tanggal, domain, halaman) tidak tercetak */}
+      <style>{`@media print { @page { size: A4 landscape; margin: 0; } }`}</style>
 
       {topAlert && (
         <div className="fixed top-16 sm:top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4 transition-all duration-300 animate-in fade-in slide-in-from-top-4 print:hidden">
@@ -591,8 +591,12 @@ export default function MasterCCTVPage() {
 
         <CardContent className="p-0 min-w-0">
           <div className="w-full max-w-full overflow-x-auto print:overflow-visible scrollbar-thin scrollbar-thumb-slate-200">
-            <table className="w-full min-w-212.5 print:min-w-0 text-xs text-left border-collapse border-b border-slate-200 print:border-black">
+            <table className="w-full min-w-212.5 print:min-w-0 text-xs text-left border-collapse border-b border-slate-200 print:border-b-0 print:border-black">
               <thead className="print:table-header-group">
+                {/* Spacer jarak atas, ikut berulang di setiap halaman kertas (hanya saat print) */}
+                <tr className="hidden print:table-row">
+                  <th colSpan={9} className="h-[8mm] p-0 border-0"></th>
+                </tr>
                 <tr className="bg-slate-100 text-slate-800 print:bg-gray-200 print:text-black border-b border-slate-200 print:border-black font-bold uppercase text-[11px] print:text-[10px]">
                   <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black text-center w-10">No</th>
                   <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black min-w-27.5 print:min-w-0">Kode CCTV</th>
@@ -693,6 +697,12 @@ export default function MasterCCTVPage() {
                   ))
                 )}
               </tbody>
+              {/* Spacer jarak bawah, ikut berulang di setiap halaman kertas (hanya saat print) */}
+              <tfoot className="hidden print:table-footer-group">
+                <tr>
+                  <td colSpan={9} className="h-[10mm] p-0 border-0"></td>
+                </tr>
+              </tfoot>
             </table>
           </div>
 
@@ -750,11 +760,11 @@ export default function MasterCCTVPage() {
             </div>
           )}
 
-          {/* TANDA TANGAN (HANYA SAAT PRINT) */}
-          <div className="hidden print:grid grid-cols-2 gap-8 mt-10 text-xs text-black print:break-inside-avoid">
+          {/* TANDA TANGAN (HANYA SAAT PRINT) - nama dikosongkan untuk diisi manual */}
+          <div className="hidden print:grid grid-cols-2 gap-8 mt-6 text-xs text-black print:break-inside-avoid">
             <div className="text-center space-y-14">
               <p>Dilaporkan Oleh,</p>
-              <p className="font-bold underline uppercase">( {adminName} )</p>
+              <p className="font-bold underline uppercase">( ............................................ )</p>
               <p className="text-[10px] -mt-12 text-gray-600 font-semibold">ICT</p>
             </div>
             <div className="text-center space-y-14">
