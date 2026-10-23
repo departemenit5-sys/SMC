@@ -324,7 +324,7 @@ export default function MasterCCTVPage() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 relative max-w-full overflow-hidden">
+    <div className="space-y-4 sm:space-y-6 relative w-full min-w-0 p-4 sm:p-6">
       {topAlert && (
         <div className="fixed top-16 sm:top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4 transition-all duration-300 animate-in fade-in slide-in-from-top-4 print:hidden">
           <div
@@ -351,8 +351,8 @@ export default function MasterCCTVPage() {
       )}
 
       {/* Header Utama Layar */}
-      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 print:hidden">
-        <div>
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 print:hidden w-full min-w-0">
+        <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Master Data Unit CCTV</h1>
           <p className="text-slate-500 text-xs mt-1">
             HOMM Saranam Baturiti — Kelola inventaris unit CCTV berdasarkan area, lokasi spesifik, tipe, dan IP address.
@@ -360,7 +360,7 @@ export default function MasterCCTVPage() {
         </div>
 
         {/* Action Button Group Mobile / Desktop Responsive */}
-        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full xl:w-auto shrink-0">
+        <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto shrink-0">
           <Button
             onClick={() => setIsResetDialogOpen(true)}
             variant="outline"
@@ -390,7 +390,7 @@ export default function MasterCCTVPage() {
 
           <Button
             onClick={handleOpenAddModal}
-            className="h-9 text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white gap-1.5 shadow-2xs justify-center col-span-2 sm:col-span-1"
+            className="h-9 text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white gap-1.5 shadow-2xs justify-center"
           >
             <Plus className="w-4 h-4" />
             <span>Tambah Unit CCTV</span>
@@ -454,7 +454,7 @@ export default function MasterCCTVPage() {
       </div>
 
       {/* CARD KONTEN UTAMA TABEL */}
-      <Card className="bg-white shadow-sm border-slate-200 overflow-hidden print:shadow-none print:border-none print:rounded-none print:bg-transparent">
+      <Card className="bg-white shadow-sm border-slate-200 overflow-hidden print:shadow-none print:border-none print:rounded-none print:bg-transparent w-full">
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 p-4 sm:p-6 print:hidden">
           <CardTitle className="text-sm sm:text-base flex items-center gap-2 font-bold">
             <Database className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 shrink-0" />
