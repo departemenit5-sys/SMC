@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { flushSync } from 'react-dom';
 import { CCTVStatus } from '@/types/cctv';
 import { getCCTVs, createCCTV, updateCCTV, deleteCCTV } from '@/lib/api';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -45,12 +46,17 @@ import {
   Loader2,
   Building,
   MapPin,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUpDown,
 } from 'lucide-react';
 
 interface AlertNotification {
   type: 'success' | 'error' | 'info';
   message: string;
 }
+
+type SortOrder = 'oldest' | 'newest' | 'code' | 'area';
 
 // Konfigurasi Area/Gedung Utama & Prefix Kode CCTV
 const AREA_CONFIG: { [key: string]: { prefix: string; floors: string[] } } = {
@@ -63,6 +69,28 @@ const AREA_CONFIG: { [key: string]: { prefix: string; floors: string[] } } = {
   'Outdoor': { prefix: 'CAM-OUT', floors: ['GF'] },
 };
 
+// Opsi jumlah data per halaman (0 = tampilkan semua)
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100, 0];
+
+// Opsi urutan tabel
+const SORT_OPTIONS: { value: SortOrder; label: string }[] = [
+  { value: 'oldest', label: 'Terlama → Terbaru' },
+  { value: 'newest', label: 'Terbaru → Terlama' },
+  { value: 'code', label: 'Kode A–Z' },
+  { value: 'area', label: 'Area A–Z' },
+];
+
+// Urutan berdasarkan waktu input: pakai created_at kalau ada, kalau tidak pakai id
+const compareByAdded = (a: any, b: any) => {
+  const ta = Date.parse(a.created_at || a.createdAt || '');
+  const tb = Date.parse(b.created_at || b.createdAt || '');
+  if (!isNaN(ta) && !isNaN(tb) && ta !== tb) return ta - tb;
+  const ia = Number(a.id);
+  const ib = Number(b.id);
+  if (!isNaN(ia) && !isNaN(ib)) return ia - ib;
+  return 0;
+};
+
 export default function MasterCCTVPage() {
   const [cctvs, setCCTVs] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -73,6 +101,12 @@ export default function MasterCCTVPage() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAreaFilter, setSelectedAreaFilter] = useState('ALL');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('oldest');
+
+  // Pagination State
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [isPrinting, setIsPrinting] = useState<boolean>(false);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState<string | number | null>(null);
@@ -113,7 +147,7 @@ export default function MasterCCTVPage() {
   };
 
   useEffect(() => {
-    const savedName = localStorage.getItem('user_name');
+    const savedName = sessionStorage.getItem('user_name') || localStorage.getItem('user_name');
     if (savedName) setAdminName(savedName);
 
     loadMasterData();
@@ -128,6 +162,26 @@ export default function MasterCCTVPage() {
     });
     setCurrentDate(formattedDate);
   }, []);
+
+  // Saat print (tombol Cetak maupun Ctrl+P), tampilkan SEMUA data hasil filter
+  useEffect(() => {
+    const handleBeforePrint = () => {
+      flushSync(() => setIsPrinting(true));
+    };
+    const handleAfterPrint = () => setIsPrinting(false);
+
+    window.addEventListener('beforeprint', handleBeforePrint);
+    window.addEventListener('afterprint', handleAfterPrint);
+    return () => {
+      window.removeEventListener('beforeprint', handleBeforePrint);
+      window.removeEventListener('afterprint', handleAfterPrint);
+    };
+  }, []);
+
+  // Kembali ke halaman 1 saat pencarian / filter / urutan / jumlah per halaman berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedAreaFilter, pageSize, sortOrder]);
 
   // Helper Auto Generate Kode CCTV Berdasarkan Area
   const generateCodeForArea = (selectedArea: string, currentList: any[] = cctvs) => {
@@ -148,29 +202,60 @@ export default function MasterCCTVPage() {
     }
   };
 
-  // Filter Data berdasarkan Search Query & Filter Tab Area
-  const filteredCCTVs = cctvs.filter((item) => {
-    const query = searchQuery.toLowerCase().trim();
-    const itemArea = item.area || 'Main Building';
-    const camera_type = item.camera_type || item.cameraType || '';
-    const ip_address = item.ip_address || item.ipAddress || '';
-    const damage_notes = item.damage_notes || item.damageNotes || '';
-    const follow_up_plan = item.follow_up_plan || item.followUpPlan || '';
+  // Filter Data berdasarkan Search Query & Filter Tab Area, lalu urutkan
+  const filteredCCTVs = cctvs
+    .filter((item) => {
+      const query = searchQuery.toLowerCase().trim();
+      const itemArea = item.area || 'Main Building';
+      const camera_type = item.camera_type || item.cameraType || '';
+      const ip_address = item.ip_address || item.ipAddress || '';
+      const damage_notes = item.damage_notes || item.damageNotes || '';
+      const follow_up_plan = item.follow_up_plan || item.followUpPlan || '';
 
-    const matchesSearch =
-      item.code.toLowerCase().includes(query) ||
-      item.location.toLowerCase().includes(query) ||
-      itemArea.toLowerCase().includes(query) ||
-      (item.floor && item.floor.toLowerCase().includes(query)) ||
-      camera_type.toLowerCase().includes(query) ||
-      ip_address.toLowerCase().includes(query) ||
-      damage_notes.toLowerCase().includes(query) ||
-      follow_up_plan.toLowerCase().includes(query);
+      const matchesSearch =
+        item.code.toLowerCase().includes(query) ||
+        item.location.toLowerCase().includes(query) ||
+        itemArea.toLowerCase().includes(query) ||
+        (item.floor && item.floor.toLowerCase().includes(query)) ||
+        camera_type.toLowerCase().includes(query) ||
+        ip_address.toLowerCase().includes(query) ||
+        damage_notes.toLowerCase().includes(query) ||
+        follow_up_plan.toLowerCase().includes(query);
 
-    const matchesAreaTab = selectedAreaFilter === 'ALL' || itemArea === selectedAreaFilter;
+      const matchesAreaTab = selectedAreaFilter === 'ALL' || itemArea === selectedAreaFilter;
 
-    return matchesSearch && matchesAreaTab;
-  });
+      return matchesSearch && matchesAreaTab;
+    })
+    .sort((a, b) => {
+      switch (sortOrder) {
+        case 'newest':
+          return compareByAdded(b, a);
+        case 'code':
+          return String(a.code).localeCompare(String(b.code), undefined, { numeric: true, sensitivity: 'base' });
+        case 'area': {
+          const byArea = String(a.area || 'Main Building').localeCompare(String(b.area || 'Main Building'), undefined, {
+            sensitivity: 'base',
+          });
+          return byArea !== 0
+            ? byArea
+            : String(a.code).localeCompare(String(b.code), undefined, { numeric: true, sensitivity: 'base' });
+        }
+        case 'oldest':
+        default:
+          return compareByAdded(a, b);
+      }
+    });
+
+  // Perhitungan Pagination
+  const totalItems = filteredCCTVs.length;
+  const totalPages = pageSize === 0 ? 1 : Math.max(1, Math.ceil(totalItems / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+  const startIndex = pageSize === 0 ? 0 : (safePage - 1) * pageSize;
+  const paginatedCCTVs = pageSize === 0 ? filteredCCTVs : filteredCCTVs.slice(startIndex, startIndex + pageSize);
+  const displayCCTVs = isPrinting ? filteredCCTVs : paginatedCCTVs;
+  const numberOffset = isPrinting ? 0 : startIndex;
+  const rangeFrom = totalItems === 0 ? 0 : startIndex + 1;
+  const rangeTo = pageSize === 0 ? totalItems : Math.min(startIndex + pageSize, totalItems);
 
   const handleExportExcel = () => {
     try {
@@ -219,7 +304,8 @@ export default function MasterCCTVPage() {
 
   const handleExportPDF = () => {
     triggerTopAlert('info', 'Mempersiapkan dokumen cetak HOMM Saranam Baturiti...');
-    window.print();
+    // Beri jeda singkat agar alert tampil, data penuh dirender lewat event "beforeprint"
+    setTimeout(() => window.print(), 100);
   };
 
   const resetForm = () => {
@@ -324,7 +410,10 @@ export default function MasterCCTVPage() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 relative w-full max-w-full min-w-0 p-4 sm:p-6">
+    <div className="space-y-4 sm:space-y-6 print:space-y-3 relative w-full max-w-full min-w-0 p-4 sm:p-6 print:p-0">
+      {/* Pengaturan kertas saat print: A4 landscape */}
+      <style>{`@media print { @page { size: A4 landscape; margin: 10mm; } }`}</style>
+
       {topAlert && (
         <div className="fixed top-16 sm:top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4 transition-all duration-300 animate-in fade-in slide-in-from-top-4 print:hidden">
           <div
@@ -399,7 +488,7 @@ export default function MasterCCTVPage() {
       </div>
 
       {/* KOP LAPORAN CETAK MASTER DATA RESMI */}
-      <div className="hidden print:block mb-6 border-b-2 border-black pb-4 text-black">
+      <div className="hidden print:block w-full mb-3 border-b-2 border-black pb-3 text-black">
         <div className="flex items-center justify-between border-b border-black pb-3 mb-3">
           <div className="flex items-center gap-3">
             <div className="w-16 h-16 flex items-center justify-center shrink-0">
@@ -429,6 +518,7 @@ export default function MasterCCTVPage() {
           </div>
           <div>
             <span className="font-semibold">Total Perangkat:</span> {filteredCCTVs.length} Unit CCTV
+            {selectedAreaFilter !== 'ALL' && <> (Area: {selectedAreaFilter})</>}
           </div>
           <div className="text-right">
             <span className="font-semibold">Status Dokumen:</span> RESMI / AUDIT IT HOMM SARANAM
@@ -455,35 +545,54 @@ export default function MasterCCTVPage() {
 
       {/* CARD KONTEN UTAMA TABEL */}
       <Card className="bg-white shadow-sm border-slate-200 overflow-hidden print:overflow-visible print:shadow-none print:border-none print:rounded-none print:bg-transparent w-full max-w-full min-w-0">
-        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 p-4 sm:p-6 print:hidden">
+        <CardHeader className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 border-b border-slate-100 p-4 sm:p-6 print:hidden">
           <CardTitle className="text-sm sm:text-base flex items-start sm:items-center gap-2 font-bold min-w-0">
             <Database className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 shrink-0 mt-0.5 sm:mt-0" />
             <span className="min-w-0 wrap-break-word">Inventaris Perangkat CCTV ({filteredCCTVs.length} Dari {cctvs.length} Unit)</span>
           </CardTitle>
 
-          <div className="relative w-full sm:w-72 shrink-0">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <Input
-              placeholder="Cari kode, area, lokasi, IP..."
-              value={searchQuery}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-8 text-xs bg-slate-50 border-slate-200 focus:bg-white transition h-9"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto min-w-0">
+            {/* Dropdown urutan (hanya tampil di web) */}
+            <div className="relative w-full sm:w-48 shrink-0">
+              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <select
+                className="w-full h-9 pl-8 pr-2 border border-slate-200 rounded-md text-xs bg-slate-50 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-purple-600 focus:bg-white"
+                value={sortOrder}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortOrder(e.target.value as SortOrder)}
+                aria-label="Urutkan data"
               >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="relative w-full sm:w-72 shrink-0">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Input
+                placeholder="Cari kode, area, lokasi, IP..."
+                value={searchQuery}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-8 text-xs bg-slate-50 border-slate-200 focus:bg-white transition h-9"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         </CardHeader>
 
         <CardContent className="p-0 min-w-0">
           <div className="w-full max-w-full overflow-x-auto print:overflow-visible scrollbar-thin scrollbar-thumb-slate-200">
             <table className="w-full min-w-212.5 print:min-w-0 text-xs text-left border-collapse border-b border-slate-200 print:border-black">
-              <thead>
+              <thead className="print:table-header-group">
                 <tr className="bg-slate-100 text-slate-800 print:bg-gray-200 print:text-black border-b border-slate-200 print:border-black font-bold uppercase text-[11px] print:text-[10px]">
                   <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black text-center w-10">No</th>
                   <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black min-w-27.5 print:min-w-0">Kode CCTV</th>
@@ -514,9 +623,9 @@ export default function MasterCCTVPage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredCCTVs.map((item, index) => (
-                    <tr key={item.id} className="hover:bg-slate-50/80 transition border-b border-slate-200 print:border-black text-slate-800 print:text-black">
-                      <td className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black text-center font-medium">{index + 1}</td>
+                  displayCCTVs.map((item, index) => (
+                    <tr key={item.id} className="hover:bg-slate-50/80 transition border-b border-slate-200 print:border-black text-slate-800 print:text-black print:break-inside-avoid">
+                      <td className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black text-center font-medium">{numberOffset + index + 1}</td>
                       <td className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black font-bold text-slate-900 print:text-black whitespace-nowrap print:whitespace-normal">{item.code}</td>
                       <td className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black">
                         <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 font-semibold text-[10px] whitespace-nowrap">
@@ -587,16 +696,71 @@ export default function MasterCCTVPage() {
             </table>
           </div>
 
-          <div className="hidden print:grid grid-cols-2 gap-8 mt-12 text-xs text-black">
+          {/* PAGINATION & FILTER JUMLAH PER HALAMAN */}
+          {!loading && totalItems > 0 && (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 border-t border-slate-100 print:hidden">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
+                <span>Tampilkan</span>
+                <select
+                  className="h-8 px-2 border border-slate-300 rounded-md text-xs bg-white font-medium focus:outline-none focus:ring-1 focus:ring-purple-600"
+                  value={pageSize}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPageSize(Number(e.target.value))}
+                >
+                  {PAGE_SIZE_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt === 0 ? 'Semua' : opt}
+                    </option>
+                  ))}
+                </select>
+                <span>
+                  data per halaman · Menampilkan <strong className="text-slate-800">{rangeFrom}–{rangeTo}</strong> dari{' '}
+                  <strong className="text-slate-800">{totalItems}</strong> unit
+                </span>
+              </div>
+
+              {pageSize !== 0 && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs gap-1"
+                    onClick={() => setCurrentPage(Math.max(1, safePage - 1))}
+                    disabled={safePage <= 1}
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span>Sebelumnya</span>
+                  </Button>
+
+                  <span className="text-xs text-slate-600 font-medium whitespace-nowrap">
+                    Hal. {safePage} / {totalPages}
+                  </span>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs gap-1"
+                    onClick={() => setCurrentPage(Math.min(totalPages, safePage + 1))}
+                    disabled={safePage >= totalPages}
+                  >
+                    <span>Berikutnya</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TANDA TANGAN (HANYA SAAT PRINT) */}
+          <div className="hidden print:grid grid-cols-2 gap-8 mt-10 text-xs text-black print:break-inside-avoid">
             <div className="text-center space-y-14">
               <p>Dilaporkan Oleh,</p>
               <p className="font-bold underline uppercase">( {adminName} )</p>
-              <p className="text-[10px] -mt-12 text-gray-600">Admin IT HOMM Saranam Baturiti</p>
+              <p className="text-[10px] -mt-12 text-gray-600 font-semibold">ICT</p>
             </div>
             <div className="text-center space-y-14">
               <p>Disetujui Oleh,</p>
               <p className="font-bold underline uppercase">( ............................................ )</p>
-              <p className="text-[10px] -mt-12 text-gray-600">Head of IT Department</p>
+              <p className="text-[10px] -mt-12 text-gray-600 font-semibold">ICT Manager</p>
             </div>
           </div>
         </CardContent>
