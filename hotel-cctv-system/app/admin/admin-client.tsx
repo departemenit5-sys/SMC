@@ -60,14 +60,14 @@ export default function AdminClient({ children }: { children: React.ReactNode })
       </Sheet>
 
       {/* Area Utama */}
-      <div className="flex-1 md:ml-64 print:ml-0 flex flex-col min-h-screen w-full">
+      <div className="flex-1 min-w-0 max-w-full md:ml-64 print:ml-0 flex flex-col min-h-screen w-full">
         <AdminHeader
           username={username}
           onLogout={handleLogout}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
         />
 
-        <main className="flex-1 p-4 md:p-8 print:p-0">
+        <main className="flex-1 min-w-0 max-w-full p-4 md:p-8 print:p-0">
           {children}
         </main>
 

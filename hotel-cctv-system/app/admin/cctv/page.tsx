@@ -482,7 +482,7 @@ export default function MasterCCTVPage() {
 
         <CardContent className="p-0 min-w-0">
           <div className="w-full max-w-full overflow-x-auto print:overflow-visible scrollbar-thin scrollbar-thumb-slate-200">
-            <table className="w-full min-w-280 print:min-w-0 text-xs text-left border-collapse border-b border-slate-200 print:border-black">
+            <table className="w-full min-w-212.5 print:min-w-0 text-xs text-left border-collapse border-b border-slate-200 print:border-black">
               <thead>
                 <tr className="bg-slate-100 text-slate-800 print:bg-gray-200 print:text-black border-b border-slate-200 print:border-black font-bold uppercase text-[11px] print:text-[10px]">
                   <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black text-center w-10">No</th>
