@@ -324,7 +324,7 @@ export default function MasterCCTVPage() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 relative w-full min-w-0 p-4 sm:p-6">
+    <div className="space-y-4 sm:space-y-6 relative w-full max-w-full min-w-0 p-4 sm:p-6">
       {topAlert && (
         <div className="fixed top-16 sm:top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4 transition-all duration-300 animate-in fade-in slide-in-from-top-4 print:hidden">
           <div
@@ -336,14 +336,14 @@ export default function MasterCCTVPage() {
                 : 'bg-blue-600 border-blue-700 text-white shadow-blue-200'
             }`}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               {topAlert.type === 'success' && <CheckCircle2 className="w-4 h-4 text-white shrink-0" />}
               {topAlert.type === 'error' && <AlertTriangle className="w-4 h-4 text-white shrink-0" />}
               {topAlert.type === 'info' && <Info className="w-4 h-4 text-white shrink-0" />}
-              <span>{topAlert.message}</span>
+              <span className="wrap-break-word min-w-0">{topAlert.message}</span>
             </div>
 
-            <button onClick={() => setTopAlert(null)} className="text-white/80 hover:text-white p-1 rounded-md">
+            <button onClick={() => setTopAlert(null)} className="text-white/80 hover:text-white p-1 rounded-md shrink-0">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -360,7 +360,7 @@ export default function MasterCCTVPage() {
         </div>
 
         {/* Action Button Group Mobile / Desktop Responsive */}
-        <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto shrink-0">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full xl:w-auto shrink-0">
           <Button
             onClick={() => setIsResetDialogOpen(true)}
             variant="outline"
@@ -437,7 +437,7 @@ export default function MasterCCTVPage() {
       </div>
 
       {/* FILTER AREA BADGES - Horizontal Scroll Smooth */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-200 print:hidden w-full">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-thin scrollbar-thumb-slate-200 print:hidden w-auto sm:w-full">
         {['ALL', 'Main Building', 'HWA', 'HWB', 'Caffe Toya', 'Villa', 'Kitchen Samiya', 'Outdoor'].map((areaName) => (
           <Button
             key={areaName}
@@ -454,14 +454,14 @@ export default function MasterCCTVPage() {
       </div>
 
       {/* CARD KONTEN UTAMA TABEL */}
-      <Card className="bg-white shadow-sm border-slate-200 overflow-hidden print:shadow-none print:border-none print:rounded-none print:bg-transparent w-full">
+      <Card className="bg-white shadow-sm border-slate-200 overflow-hidden print:overflow-visible print:shadow-none print:border-none print:rounded-none print:bg-transparent w-full max-w-full min-w-0">
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 p-4 sm:p-6 print:hidden">
-          <CardTitle className="text-sm sm:text-base flex items-center gap-2 font-bold">
-            <Database className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 shrink-0" />
-            <span>Inventaris Perangkat CCTV ({filteredCCTVs.length} Dari {cctvs.length} Unit)</span>
+          <CardTitle className="text-sm sm:text-base flex items-start sm:items-center gap-2 font-bold min-w-0">
+            <Database className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 shrink-0 mt-0.5 sm:mt-0" />
+            <span className="min-w-0 wrap-break-word">Inventaris Perangkat CCTV ({filteredCCTVs.length} Dari {cctvs.length} Unit)</span>
           </CardTitle>
 
-          <div className="relative w-full sm:w-72">
+          <div className="relative w-full sm:w-72 shrink-0">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <Input
               placeholder="Cari kode, area, lokasi, IP..."
@@ -480,20 +480,20 @@ export default function MasterCCTVPage() {
           </div>
         </CardHeader>
 
-        <CardContent className="p-0">
-          <div className="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200">
-            <table className="w-full min-w-212.5 text-xs text-left border-collapse border-b border-slate-200 print:border-black">
+        <CardContent className="p-0 min-w-0">
+          <div className="w-full max-w-full overflow-x-auto print:overflow-visible scrollbar-thin scrollbar-thumb-slate-200">
+            <table className="w-full min-w-280 print:min-w-0 text-xs text-left border-collapse border-b border-slate-200 print:border-black">
               <thead>
                 <tr className="bg-slate-100 text-slate-800 print:bg-gray-200 print:text-black border-b border-slate-200 print:border-black font-bold uppercase text-[11px] print:text-[10px]">
                   <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black text-center w-10">No</th>
-                  <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black min-w-27.5">Kode CCTV</th>
-                  <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black min-w-30">Area Utama</th>
-                  <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black min-w-40">Lokasi & Lantai</th>
-                  <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black min-w-27.5">Tipe Kamera</th>
-                  <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black min-w-30">IP Address</th>
-                  <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black text-center min-w-25">Status</th>
-                  <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black min-w-35">Detail Kendala</th>
-                  <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black min-w-35">Tindak Lanjut</th>
+                  <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black min-w-27.5 print:min-w-0">Kode CCTV</th>
+                  <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black min-w-30 print:min-w-0">Area Utama</th>
+                  <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black min-w-40 print:min-w-0">Lokasi & Lantai</th>
+                  <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black min-w-27.5 print:min-w-0">Tipe Kamera</th>
+                  <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black min-w-30 print:min-w-0">IP Address</th>
+                  <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black text-center min-w-25 print:min-w-0">Status</th>
+                  <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black min-w-35 print:min-w-0">Detail Kendala</th>
+                  <th className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black min-w-35 print:min-w-0">Tindak Lanjut</th>
                   <th className="p-2.5 sm:p-3 text-center print:hidden w-20">Aksi</th>
                 </tr>
               </thead>
@@ -517,7 +517,7 @@ export default function MasterCCTVPage() {
                   filteredCCTVs.map((item, index) => (
                     <tr key={item.id} className="hover:bg-slate-50/80 transition border-b border-slate-200 print:border-black text-slate-800 print:text-black">
                       <td className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black text-center font-medium">{index + 1}</td>
-                      <td className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black font-bold text-slate-900 print:text-black">{item.code}</td>
+                      <td className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black font-bold text-slate-900 print:text-black whitespace-nowrap print:whitespace-normal">{item.code}</td>
                       <td className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black">
                         <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 font-semibold text-[10px] whitespace-nowrap">
                           <Building className="w-3 h-3 mr-1 shrink-0" />
@@ -527,15 +527,15 @@ export default function MasterCCTVPage() {
                       <td className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black">
                         <div className="font-bold text-slate-800 print:text-black flex items-center gap-1">
                           <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 print:hidden" />
-                          <span>{item.location}</span>
+                          <span className="wrap-break-word min-w-0">{item.location}</span>
                         </div>
                         <div className="text-[11px] text-purple-700 print:text-gray-700 font-semibold flex items-center gap-1 mt-0.5">
                           <Layers className="w-3 h-3 text-purple-600 print:hidden shrink-0" />
                           <span>Lantai: {item.floor || 'GF'}</span>
                         </div>
                       </td>
-                      <td className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black text-slate-700 print:text-black font-medium">{item.camera_type || item.cameraType}</td>
-                      <td className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black font-mono text-slate-700 print:text-black whitespace-nowrap">{item.ip_address || item.ipAddress || '-'}</td>
+                      <td className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black text-slate-700 print:text-black font-medium wrap-break-word">{item.camera_type || item.cameraType}</td>
+                      <td className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black font-mono text-slate-700 print:text-black whitespace-nowrap print:whitespace-normal">{item.ip_address || item.ipAddress || '-'}</td>
                       <td className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black text-center">
                         <Badge
                           className={`text-[10px] uppercase font-bold whitespace-nowrap ${
@@ -557,8 +557,8 @@ export default function MasterCCTVPage() {
                             : 'OFFLINE'}
                         </Badge>
                       </td>
-                      <td className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black text-slate-700 print:text-black">{item.damage_notes || item.damageNotes || '-'}</td>
-                      <td className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black text-slate-700 print:text-black">{item.follow_up_plan || item.followUpPlan || '-'}</td>
+                      <td className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black text-slate-700 print:text-black wrap-break-word">{item.damage_notes || item.damageNotes || '-'}</td>
+                      <td className="p-2.5 sm:p-3 border-r border-slate-200 print:border-black text-slate-700 print:text-black wrap-break-word">{item.follow_up_plan || item.followUpPlan || '-'}</td>
                       <td className="p-2.5 sm:p-3 text-center print:hidden">
                         <div className="flex items-center justify-center gap-1">
                           <Button
@@ -604,7 +604,7 @@ export default function MasterCCTVPage() {
 
       {/* MODAL DIALOG KONFIRMASI HAPUS */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open: boolean) => !open && setDeleteTarget(null)}>
-        <AlertDialogContent className="bg-white rounded-xl max-w-sm sm:max-w-md p-5 sm:p-6 w-[92vw]">
+        <AlertDialogContent className="bg-white rounded-xl max-w-sm sm:max-w-md p-5 sm:p-6 w-[92vw] max-h-[90dvh] overflow-y-auto">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-red-600 shrink-0" />
@@ -615,10 +615,10 @@ export default function MasterCCTVPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-4 flex flex-row gap-2 justify-end">
-            <AlertDialogCancel className="text-xs h-9 m-0 w-full sm:w-auto">Batal</AlertDialogCancel>
+            <AlertDialogCancel className="text-xs h-9 m-0 flex-1 sm:flex-none sm:w-auto">Batal</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
-              className="bg-red-600 hover:bg-red-700 text-white text-xs h-9 w-full sm:w-auto"
+              className="bg-red-600 hover:bg-red-700 text-white text-xs h-9 flex-1 sm:flex-none sm:w-auto"
             >
               Ya, Hapus Unit
             </AlertDialogAction>
@@ -628,7 +628,7 @@ export default function MasterCCTVPage() {
 
       {/* MODAL DIALOG KONFIRMASI SYNC */}
       <AlertDialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
-        <AlertDialogContent className="bg-white rounded-xl max-w-sm sm:max-w-md p-5 sm:p-6 w-[92vw]">
+        <AlertDialogContent className="bg-white rounded-xl max-w-sm sm:max-w-md p-5 sm:p-6 w-[92vw] max-h-[90dvh] overflow-y-auto">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
               <RefreshCw className="w-5 h-5 text-purple-600 shrink-0" />
@@ -639,10 +639,10 @@ export default function MasterCCTVPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-4 flex flex-row gap-2 justify-end">
-            <AlertDialogCancel className="text-xs h-9 m-0 w-full sm:w-auto">Batal</AlertDialogCancel>
+            <AlertDialogCancel className="text-xs h-9 m-0 flex-1 sm:flex-none sm:w-auto">Batal</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmResetData}
-              className="bg-purple-600 hover:bg-purple-700 text-white text-xs h-9 w-full sm:w-auto"
+              className="bg-purple-600 hover:bg-purple-700 text-white text-xs h-9 flex-1 sm:flex-none sm:w-auto"
             >
               Ya, Sinkronkan
             </AlertDialogAction>
@@ -652,8 +652,8 @@ export default function MasterCCTVPage() {
 
       {/* MODAL POP-UP FORM DIALOG INPUT LENGKAP */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-lg bg-white p-5 sm:p-6 rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto w-[94vw]">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-lg bg-white p-5 sm:p-6 rounded-xl shadow-2xl max-h-[90dvh] overflow-y-auto w-[94vw]">
+          <DialogHeader className="text-left">
             <DialogTitle className="text-base sm:text-lg font-bold text-slate-900">
               {isEditing ? 'Edit Data CCTV' : 'Tambah Unit CCTV Baru'}
             </DialogTitle>
@@ -664,10 +664,10 @@ export default function MasterCCTVPage() {
 
           <form onSubmit={handleSaveCCTV} className="space-y-3 sm:space-y-3.5 py-1">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
+              <div className="min-w-0">
                 <Label className="text-xs font-semibold">Pilih Area / Gedung Utama</Label>
                 <select
-                  className="w-full p-2 border border-slate-300 rounded-md text-xs mt-1 bg-white font-bold text-purple-700 focus:outline-none focus:ring-1 focus:ring-purple-600"
+                  className="w-full h-9 p-2 border border-slate-300 rounded-md text-xs mt-1 bg-white font-bold text-purple-700 focus:outline-none focus:ring-1 focus:ring-purple-600"
                   value={area}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleSelectArea(e.target.value)}
                   required
@@ -680,7 +680,7 @@ export default function MasterCCTVPage() {
                 </select>
               </div>
 
-              <div>
+              <div className="min-w-0">
                 <Label className="text-xs font-semibold flex items-center justify-between">
                   <span>Kode CCTV (Auto)</span>
                   {!isEditing && area && (
@@ -704,7 +704,7 @@ export default function MasterCCTVPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
+              <div className="min-w-0">
                 <Label className="text-xs font-semibold">Spesifik Lokasi Area (Manual)</Label>
                 <Input
                   placeholder="misal: Front Office / Lobby Bar"
@@ -715,7 +715,7 @@ export default function MasterCCTVPage() {
                 />
               </div>
 
-              <div>
+              <div className="min-w-0">
                 <Label className="text-xs font-semibold">Pilih Lantai / Level</Label>
                 <select
                   className="w-full p-2 border border-slate-300 rounded-md text-xs mt-1 bg-white font-medium h-9 focus:outline-none focus:ring-1 focus:ring-purple-600"
@@ -733,7 +733,7 @@ export default function MasterCCTVPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
+              <div className="min-w-0">
                 <Label className="text-xs font-semibold">Tipe Kamera</Label>
                 <Input
                   placeholder="misal: Dome 4MP / PTZ 360 / Bullet"
@@ -744,7 +744,7 @@ export default function MasterCCTVPage() {
                 />
               </div>
 
-              <div>
+              <div className="min-w-0">
                 <Label className="text-xs font-semibold">IP Address Perangkat</Label>
                 <Input
                   placeholder="misal: 192.168.10.25"
