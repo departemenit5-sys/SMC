@@ -67,6 +67,8 @@ const AREA_CONFIG: { [key: string]: { prefix: string; floors: string[] } } = {
   'Villa': { prefix: 'CAM-VIL', floors: ['GF', 'LT2'] },
   'Kitchen Samiya': { prefix: 'CAM-KS', floors: ['GF'] },
   'Outdoor': { prefix: 'CAM-OUT', floors: ['GF'] },
+  'Mess': { prefix: 'CAM-MESS', floors: ['GF'] },
+  'Other': { prefix: 'CAM-OTH', floors: ['GF'] },
 };
 
 // Opsi jumlah data per halaman (0 = tampilkan semua)
@@ -526,9 +528,9 @@ export default function MasterCCTVPage() {
         </div>
       </div>
 
-      {/* FILTER AREA BADGES - Horizontal Scroll Smooth */}
+      {/* FILTER AREA BADGES - Horizontal Scroll Smooth (otomatis dari AREA_CONFIG) */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-thin scrollbar-thumb-slate-200 print:hidden w-auto sm:w-full">
-        {['ALL', 'Main Building', 'HWA', 'HWB', 'Caffe Toya', 'Villa', 'Kitchen Samiya', 'Outdoor'].map((areaName) => (
+        {['ALL', ...Object.keys(AREA_CONFIG)].map((areaName) => (
           <Button
             key={areaName}
             variant={selectedAreaFilter === areaName ? 'default' : 'outline'}
